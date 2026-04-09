@@ -1,301 +1,143 @@
-﻿using System.Text.Json;
-
-namespace Assignment2;
-
-class Program
+﻿namespace Assignment2
 {
-    static List<College> colleges = new List<College>();
-
-    static void Main(string[] args)
+    // Assignment 2 - COMP1202
+// Group Member: Chi Bao Tu - 101490975
+    internal class Program
     {
-        SeedColleges();
-        LoadData();
-
-        while (true)
+        static void Main(string[] args)
         {
-            College? selectedCollege = ShowCollegeMenu();
+            College college = new College();
 
-            if (selectedCollege == null)
+            try
             {
-                Console.WriteLine("Exiting program...");
-                return;
+                college.LoadData();
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("Error loading data: " + ex.Message);
             }
 
-            RunOldMenu(selectedCollege);
-        }
-    }
+            bool running = true;
 
-    static College? ShowCollegeMenu()
-    {
-        while (true)
-        {
-            Console.WriteLine("\n====== COLLEGE MENU ======");
-            foreach (College college in colleges)
+            while (running)
             {
-                Console.WriteLine($"{college.Id}. {college.CollegeName}");
-            }
-            Console.WriteLine("0. Exit");
-            Console.Write("Select a college: ");
+                Console.WriteLine("\n===== COURSE REGISTRATION SYSTEM =====");
+                Console.WriteLine("1. Add Student");
+                Console.WriteLine("2. Add Course");
+                Console.WriteLine("3. Register Student to Course");
+                Console.WriteLine("4. Display All Students");
+                Console.WriteLine("5. Display All Courses");
+                Console.WriteLine("6. Display Registrations");
+                Console.WriteLine("7. Save Data");
+                Console.WriteLine("8. Load Data");
+                Console.WriteLine("9. Exit");
+                Console.Write("Enter your choice: ");
 
-            string? input = Console.ReadLine();
-            int choice;
+                string? choice = Console.ReadLine();
 
-            if (!int.TryParse(input, out choice))
-            {
-                Console.WriteLine("Invalid input.");
-                continue;
-            }
-
-            if (choice == 0)
-            {
-                return null;
-            }
-
-            foreach (College college in colleges)
-            {
-                if (college.Id == choice)
+                switch (choice)
                 {
-                    return college;
-                }
-            }
+                    case "1":
+                        AddStudentMenu(college);
+                        break;
 
-            Console.WriteLine("College not found.");
-        }
-    }
+                    case "2":
+                        AddCourseMenu(college);
+                        break;
 
-    static string? CollegeTemplateMenu()
-    {
-        Console.WriteLine("\n====== MAIN MENU ======");
-        Console.WriteLine("1. Add Students");
-        Console.WriteLine("2. Add Courses");
-        Console.WriteLine("3. Register Student To Course");
-        Console.WriteLine("4. Display all students");
-        Console.WriteLine("5. Display all courses");
-        Console.WriteLine("6. Display Registrations");
-        Console.WriteLine("7. Save Data");
-        Console.WriteLine("8. Load Data");
-        Console.WriteLine("9. Back to College Menu");
-        Console.WriteLine("10. Exit");
-        Console.Write("Enter choice: ");
-        return Console.ReadLine();
-    }
+                    case "3":
+                        RegisterStudentMenu(college);
+                        break;
 
-    static void RunOldMenu(College college)
-    {
-        while (true)
-        {
-            Console.WriteLine($"\n=== Selected College: {college.CollegeName} ===");
-            string? choice = CollegeTemplateMenu();
+                    case "4":
+                        college.DisplayAllStudents();
+                        break;
 
-            switch (choice)
-            {
-                case "1":
-                    AddStudent(college);
-                    break;
-                case "2":
-                    AddCourse(college);
-                    break;
-                case "3":
-                    RegisterStudentToCourse(college);
-                    break;
-                case "4":
-                    DisplayAllStudents(college);
-                    break;
-                case "5":
-                    DisplayAllCourses(college);
-                    break;
-                case "6":
-                    DisplayRegistrations(college);
-                    break;
-                case "7":
-                    SaveData();
-                    break;
-                case "8":
-                    LoadData();
-                    Console.WriteLine("Data loaded.");
-                    break;
-                case "9":
-                    return;
-                case "10":
-                    SaveData();
-                    Console.WriteLine("Data saved. Exiting...");
-                    Environment.Exit(0);
-                    break;
-                default:
-                    Console.WriteLine("Invalid choice.");
-                    break;
-            }
-        }
-    }
+                    case "5":
+                        college.DisplayAllCourses();
+                        break;
 
-    static void SeedColleges()
-    {
-        if (colleges.Count > 0)
-            return;
+                    case "6":
+                        college.DisplayRegistrations();
+                        Console.WriteLine($"\nTotal Registrations: {college.CountTotalRegistrations()}");
+                        break;
 
-        colleges.Add(new College(1, "George Brown College"));
-        colleges.Add(new College(2, "Seneca Polytechnic"));
-        colleges.Add(new College(3, "Humber College"));
-    }
+                    case "7":
+                        try
+                        {
+                            college.SaveData();
+                        }
+                        catch (Exception ex)
+                        {
+                            Console.WriteLine("Error saving data: " + ex.Message);
+                        }
+                        break;
 
-    static void AddStudent(College college)
-    {
-        Console.Write("Enter student name: ");
-        string? name = Console.ReadLine();
+                    case "8":
+                        try
+                        {
+                            college.LoadData();
+                        }
+                        catch (Exception ex)
+                        {
+                            Console.WriteLine("Error loading data: " + ex.Message);
+                        }
+                        break;
 
-        Console.Write("Enter student email: ");
-        string? email = Console.ReadLine();
+                    case "9":
+                        try
+                        {
+                            college.SaveData();
+                        }
+                        catch (Exception ex)
+                        {
+                            Console.WriteLine("Error saving before exit: " + ex.Message);
+                        }
 
-        if (string.IsNullOrWhiteSpace(name) || string.IsNullOrWhiteSpace(email))
-        {
-            Console.WriteLine("Invalid input.");
-            return;
-        }
+                        Console.WriteLine("Exiting program...");
+                        running = false;
+                        break;
 
-        Student student = new Student(name, email);
-        college.StudentsList.Add(student);
-        Console.WriteLine("Student added.");
-    }
-
-    static void AddCourse(College college)
-    {
-        Console.Write("Enter course name: ");
-        string? courseName = Console.ReadLine();
-
-        Console.Write("Enter course credits: ");
-        string? input = Console.ReadLine();
-        int credits;
-
-        if (string.IsNullOrWhiteSpace(courseName) || !int.TryParse(input, out credits))
-        {
-            Console.WriteLine("Invalid input.");
-            return;
-        }
-
-        Course course = new Course(courseName, credits);
-        college.CourseList.Add(course);
-        Console.WriteLine("Course added.");
-    }
-
-    static void RegisterStudentToCourse(College college)
-    {
-        Console.Write("Enter Student ID: ");
-        string? studentInput = Console.ReadLine();
-
-        Console.Write("Enter Course ID: ");
-        string? courseInput = Console.ReadLine();
-
-        int studentId, courseId;
-
-        if (!int.TryParse(studentInput, out studentId) || !int.TryParse(courseInput, out courseId))
-        {
-            Console.WriteLine("Invalid input.");
-            return;
-        }
-
-        int studentIndex = -1;
-        int courseIndex = -1;
-
-        for (int i = 0; i < college.StudentsList.Count; i++)
-        {
-            if (college.StudentsList[i].Id == studentId)
-            {
-                studentIndex = i;
-                break;
-            }
-        }
-
-        for (int j = 0; j < college.CourseList.Count; j++)
-        {
-            if (college.CourseList[j].Id == courseId)
-            {
-                courseIndex = j;
-                break;
-            }
-        }
-
-        if (studentIndex != -1 && courseIndex != -1)
-        {
-            college.Registrations[studentIndex, courseIndex] = true;
-            Console.WriteLine("Registration successful.");
-        }
-        else
-        {
-            Console.WriteLine("Invalid Student ID or Course ID.");
-        }
-    }
-
-    static void DisplayAllStudents(College college)
-    {
-        if (college.StudentsList.Count == 0)
-        {
-            Console.WriteLine("No students found.");
-            return;
-        }
-
-        foreach (Student student in college.StudentsList)
-        {
-            Console.WriteLine(student);
-        }
-    }
-
-    static void DisplayAllCourses(College college)
-    {
-        if (college.CourseList.Count == 0)
-        {
-            Console.WriteLine("No courses found.");
-            return;
-        }
-
-        foreach (Course course in college.CourseList)
-        {
-            Console.WriteLine(course);
-        }
-    }
-
-    static void DisplayRegistrations(College college)
-    {
-        bool hasRegistrations = false;
-
-        for (int i = 0; i < college.StudentsList.Count; i++)
-        {
-            for (int j = 0; j < college.CourseList.Count; j++)
-            {
-                if (college.Registrations[i, j])
-                {
-                    Console.WriteLine(
-                        $"Student: {college.StudentsList[i].Name} (ID: {college.StudentsList[i].Id}) " +
-                        $"is registered in Course: {college.CourseList[j].CourseName} (ID: {college.CourseList[j].Id})"
-                    );
-                    hasRegistrations = true;
+                    default:
+                        Console.WriteLine("Invalid choice. Please try again.");
+                        break;
                 }
             }
         }
 
-        if (!hasRegistrations)
+        static void AddStudentMenu(College college)
         {
-            Console.WriteLine("No registrations found.");
+            Console.Write("Enter student name: ");
+            string? name = Console.ReadLine();
+
+            Console.Write("Enter student email: ");
+            string? email = Console.ReadLine();
+
+            college.AddStudent(name ?? "", email ?? "");
+            Console.WriteLine("Student added successfully.");
         }
-    }
 
-    static void SaveData()
-    {
-        string json = JsonSerializer.Serialize(colleges);
-        File.WriteAllText("colleges.json", json);
-        Console.WriteLine("Data saved.");
-    }
-
-    static void LoadData()
-    {
-        if (File.Exists("colleges.json"))
+        static void AddCourseMenu(College college)
         {
-            string json = File.ReadAllText("colleges.json");
-            List<College>? loaded = JsonSerializer.Deserialize<List<College>>(json);
+            Console.Write("Enter course name: ");
+            string? courseName = Console.ReadLine();
 
-            if (loaded != null)
-            {
-                colleges = loaded;
-            }
+            Console.Write("Enter credit hours: ");
+            int creditHours = int.Parse(Console.ReadLine() ?? "0");
+
+            college.AddCourse(courseName ?? "", creditHours);
+            Console.WriteLine("Course added successfully.");
+        }
+
+        static void RegisterStudentMenu(College college)
+        {
+            Console.Write("Enter Student ID: ");
+            int studentId = int.Parse(Console.ReadLine() ?? "0");
+
+            Console.Write("Enter Course ID: ");
+            int courseId = int.Parse(Console.ReadLine() ?? "0");
+
+            college.RegisterStudentToCourse(studentId, courseId);
         }
     }
 }
